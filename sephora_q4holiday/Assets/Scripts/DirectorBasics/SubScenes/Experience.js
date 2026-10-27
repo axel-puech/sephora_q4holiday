@@ -3,6 +3,8 @@
 //@input Asset.Texture[] textures
 //@input float delayBeforeStart
 
+//@input float delayBeforeChangeScene
+
 //_________________________Director Setup_________________________//
 script.subScene = new global.SubScene(script, script.parent);
 script.subScene.OnStart = Start;
@@ -56,6 +58,10 @@ var resetInteractionDelay = script.subScene.CreateEvent("DelayedCallbackEvent", 
   enableInteraction = true;
 });
 
+var changeSceneDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
+  script.subScene.CallEnd(null);
+});
+
 var beforeStartDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
   toggleExperienceCaller.Call(true);
   enableInteraction = true;
@@ -105,6 +111,10 @@ function OnTimerEndEvent() {
   squareArray.forEach((element) => {
     element._anims.fade.GoTo(0);
   });
+  changeSceneDelay.event.reset(script.delayBeforeChangeScene);
+
+  // petit timer
+  // end scene
 }
 
 function onSquareTapped(squareTapped) {
@@ -213,7 +223,7 @@ class Square {
       script.getSceneObject(),
       0.2,
       (ratio) => {
-        const scaleMultiplier = 1 + ratio * 0.1;
+        const scaleMultiplier = 1 + ratio * 0.05;
         const animatedScale = this._baseScale.uniformScale(scaleMultiplier);
 
         this._backObjTransform.setLocalScale(animatedScale);
