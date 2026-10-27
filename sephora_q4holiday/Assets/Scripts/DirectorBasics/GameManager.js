@@ -8,6 +8,11 @@ class GameManager {
 
     this.generatePair();
     print("pairs :" + this._pairs);
+
+    this._status = "no"; // flip_1, flip_2
+
+    this._flip_1 = null;
+    this._flip_2 = null;
   }
 
   generatePair() {
