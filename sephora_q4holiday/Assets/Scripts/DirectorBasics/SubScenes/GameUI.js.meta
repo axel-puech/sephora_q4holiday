@@ -31,6 +31,7 @@
     parent: false
     textScore: false
     textTime: false
+    userFlow: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -44,6 +45,7 @@
       textTime: !<reference.Text> 00000000-0000-0000-0000-000000000000
       textScore: !<reference.Text> 00000000-0000-0000-0000-000000000000
       endTimeValue: !<float> 0.000000
+      userFlow: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}

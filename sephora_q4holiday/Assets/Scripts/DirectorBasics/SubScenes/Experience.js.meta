@@ -27,6 +27,7 @@
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
+    delayBeforeStart: false
     parent: false
     squareParent: false
     textures: false
@@ -44,6 +45,7 @@
         []
       textures: !<reference.Texture[]>
         []
+      delayBeforeStart: !<float> 0.000000
   ScriptTypes:
     -
       {}

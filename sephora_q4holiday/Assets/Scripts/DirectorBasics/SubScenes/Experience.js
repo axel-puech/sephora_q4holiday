@@ -1,6 +1,7 @@
 //@input SceneObject parent
 //@input SceneObject[] squareParent
 //@input Asset.Texture[] textures
+//@input float delayBeforeStart
 
 //_________________________Director Setup_________________________//
 script.subScene = new global.SubScene(script, script.parent);
@@ -30,7 +31,12 @@ let number_pairs = 8;
 //________Caller________//
 
 const onMatchCaller = script.subScene.CreateCaller("OnMatchEvent");
+const toggleExperienceCaller = script.subScene.CreateCaller("OnToggleExperience", null);
+
 //________Listener________//
+
+const timerEndListener = script.subScene.CreateListener("TimerEndEvent", OnTimerEndEvent);
+
 //________DelayEvent________//
 
 var flipSquareDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
@@ -48,6 +54,12 @@ var flipSquareDelay = script.subScene.CreateEvent("DelayedCallbackEvent", functi
 
 var resetInteractionDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
   enableInteraction = true;
+});
+
+var beforeStartDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
+  toggleExperienceCaller.Call(true);
+  enableInteraction = true;
+  print("all right");
 });
 
 var matchSquareDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
@@ -72,7 +84,7 @@ function Start() {
   });
 }
 function OnLateStart() {
-  enableInteraction = true;
+  beforeStartDelay.event.reset(script.delayBeforeStart);
 }
 function Update() {}
 function Stop() {
@@ -87,6 +99,13 @@ function Stop() {
   pairFound = 0;
 }
 //___________________________Functions__________________________//
+
+function OnTimerEndEvent() {
+  print("all right 2");
+  squareArray.forEach((element) => {
+    element._anims.fade.GoTo(0);
+  });
+}
 
 function onSquareTapped(squareTapped) {
   // si on fait le premier flip
@@ -137,14 +156,20 @@ class Square {
     this._frontObj = this.getChildByName("Front");
     this._interaction = this._frontObj.getComponent("Component.InteractionComponent");
 
+    this._meshVisual_front = this._frontObj.getComponent("Component.RenderMeshVisual");
+    this._material_front = this._meshVisual_front.mainMaterial.clone();
+    this._meshVisual_front.mainMaterial = this._material_front;
+
     this._interaction.onTap.add(this.onTap.bind(this));
 
     //___________________________Back__________________________//
 
     this._backObj = this.getChildByName("Back");
     this._backObjTransform = this._backObj.getTransform();
+
     this._meshVisual = this._backObj.getComponent("Component.RenderMeshVisual");
     this._material = this._meshVisual.mainMaterial.clone();
+
     this._meshVisual.mainMaterial = this._material;
     this.setTexture(this._texture);
 
@@ -173,7 +198,8 @@ class Square {
 
   initAnimations() {
     this._anims.fade = new Animation(script.getSceneObject(), 0.5, (ratio) => {
-      this._material.mainPass.baseColor = new vec4(1, 1, 1, ratio);
+      this._material_front.mainPass.alphaRatio = ratio;
+      this._material.mainPass.alphaRatio = ratio;
     });
 
     this._anims.rotate = new Animation(script.getSceneObject(), flipAnimationDuration, (ratio) => {

@@ -840,9 +840,6 @@ Nodes:
       PositionY: 141
       TemplateID: nodes_main_subgraph
       Title1: Transformed UV 3
-      ViewOffsetX0: -220
-      ViewOffsetY0: 34
-      ViewScale0: 0.40049985
     Node16:
       ChildNodes:
         Node0:
@@ -1378,15 +1375,6 @@ Nodes:
       PositionY: -620
       TemplateID: nodes_main_subgraph
       Title1: Base Color
-      ViewOffsetX0: 453
-      ViewOffsetX1: -492
-      ViewOffsetX2: -492
-      ViewOffsetX3: -492
-      ViewOffsetY0: 119
-      ViewOffsetY1: 100
-      ViewOffsetY2: 100
-      ViewOffsetY3: 100
-      ViewScale0: 0.7005832
     Node17:
       DependencyIndex: 67
       LevelID: 308
@@ -2101,11 +2089,79 @@ Nodes:
       PositionY: 108
       TemplateID: nodes_main_subgraph
       Title1: Opacity
-      ViewOffsetX0: 65
-      ViewOffsetY0: -126
-      ViewScale0: 0.8001666
     Node21:
       DependencyIndex: 86
+      LevelID: 41
+      NodeCount: 0
+      NodeType: 1
+      Ports:
+        Channels:
+          ItemIndex: 5
+          ItemList: "xyzw : rgba : xyz : rgb : xy : x"
+        Default:
+          Variable: [1.0, 1.0, 1.0, 1.0]
+        EnableMax:
+          Variable: true
+        EnableMin:
+          Variable: true
+        Group:
+          String: ""
+        Max:
+          Variable: 1.0
+        Min:
+          Variable: 0.0
+        Output:
+          IOType: 1
+          Variable: [0.0, 0.0, 0.0, 0.0]
+        ScriptName:
+          String: alphaRatio
+        SortIndex:
+          Variable: 0
+        Step:
+          Variable: 0.009999999776482582
+        Title:
+          String: AlphaRatio
+        Tooltip:
+          String: ""
+      PositionX: 3123
+      PositionY: 70
+      TemplateID: nodes_inputs_parameters_float
+      Title1: Float Parameter
+      Title2: AlphaRatio
+    Node22:
+      DependencyIndex: 87
+      LevelID: 42
+      NodeCount: 0
+      NodeType: 1
+      Ports:
+        Input0:
+          Connection0:
+            NodeLevelID: 39
+            PortID: SubGraphUniqueID158
+          Variable: [1.0, 1.0, 1.0, 1.0]
+        Input1:
+          Connection0:
+            NodeLevelID: 41
+            PortID: Output
+          Variable: [1.0, 1.0, 1.0, 1.0]
+        Inputs:
+          ItemIndex: 0
+          ItemList: "2 : 3 : 4 : 5 : 6"
+        Output:
+          IOType: 1
+          Variable: [0.0, 0.0, 0.0, 0.0]
+        Type0:
+          ItemIndex: 0
+          ItemList: "auto : xyzw : rgba : xyz : rgb : xy : x"
+        Type1:
+          ItemIndex: 0
+          ItemList: "auto : xyzw : rgba : xyz : rgb : xy : x"
+      PositionX: 3316
+      PositionY: -96
+      TemplateID: nodes_math_multiply
+      Title1: Multiply
+    Node23:
+      DependencyIndex: 88
       LevelID: 1
       NodeCount: 0
       NodeType: 1
@@ -2134,8 +2190,8 @@ Nodes:
           Variable: [0.0, 0.0, 0.0, 0.0]
         Value2:
           Connection0:
-            NodeLevelID: 39
-            PortID: SubGraphUniqueID158
+            NodeLevelID: 42
+            PortID: Output
           Variable: [0.0, 0.0, 0.0, 0.0]
         Value3:
           Variable: [0.0, 0.0, 0.0, 0.0]
@@ -2145,11 +2201,11 @@ Nodes:
       PositionY: -640
       TemplateID: node_channels_combine
       Title1: Construct Vector
-    Node21CheckValue: false
-    Node22:
+    Node23CheckValue: false
+    Node24:
       CommentSizeX: 0
       CommentSizeY: 0
-      DependencyIndex: 87
+      DependencyIndex: 89
       LevelID: 4
       NodeCount: 0
       NodeType: 1
@@ -2158,8 +2214,7 @@ Nodes:
           Variable: 1.0
         DepthMode:
           ItemIndex: 0
-          ItemList: |2-
-            		Non-Linear - Normalized [0 to 1] ) :		Linear - Normalized [-1 to 1] :		View Space - Non-Normalized [-near to -far]	
+          ItemList: "Non-Linear - Normalized [0 to 1] : Linear - Normalized [-1 to 1] : View Space - Non-Normalized [-near to -far]"
         DontFreezeSpec:
           Variable: false
         FinalColor:
@@ -2177,18 +2232,31 @@ Nodes:
         FinalColor3:
           ClassType1: COLOR
           Variable: [1.0, 1.0, 1.0, 1.0]
+        GSplatPointSize:
+          Variable: 0.0
+        GSplatRotation:
+          Variable: [0.0, 0.0, 0.0, 1.0]
+        GSplatScale:
+          Variable: [0.0, 0.0, 0.0]
+        Motion Vector Pass:
+          ItemIndex: 0
+          ItemList: "Write Velocity and Depth : Discard Velocity but Write Depth : Discard Velocity and Depth"
         Negative:
           Variable: false
+        PrevWorldPosition:
+          Variable: [0.0, 0.0, 0.0]
         RayDirection:
           Variable: [0.0, 1.0, 0.0]
         RayOrigin:
           Variable: [0.0, 0.0, 0.0]
+        ShowPrevPos:
+          Variable: false
         Targets:
           ItemIndex: 0
           ItemList: "1 : 2 : 3 : 4"
         Type:
           ItemIndex: 0
-          ItemList: "3D : Post Effect : Hair"
+          ItemList: "3D : Post Effect : Hair : Gaussian Splatting"
         WorldNormal:
           Variable: [0.0, 1.0, 0.0]
         WorldPosition:
@@ -2202,10 +2270,10 @@ Nodes:
       TemplateID: nodes_main_graph
       Title1: Shader
       Title2: 3D
-    Node23:
+    Node25:
       CommentSizeX: 652
       CommentSizeY: 1292
-      DependencyIndex: 88
+      DependencyIndex: 90
       LevelID: 147
       NodeCount: 0
       NodeType: 1
@@ -2229,10 +2297,10 @@ Nodes:
       PositionY: -714
       TemplateID: node_util_comment
       Title1: ""
-    Node24:
+    Node26:
       CommentSizeX: 747
       CommentSizeY: 505
-      DependencyIndex: 89
+      DependencyIndex: 91
       LevelID: 71
       NodeCount: 0
       NodeType: 1
@@ -2256,10 +2324,10 @@ Nodes:
       PositionY: -10
       TemplateID: node_util_comment
       Title1: ""
-    Node25:
+    Node27:
       CommentSizeX: 749
       CommentSizeY: 604
-      DependencyIndex: 90
+      DependencyIndex: 92
       LevelID: 368
       NodeCount: 0
       NodeType: 1
@@ -3044,8 +3112,6 @@ Nodes:
       PositionY: -496
       TemplateID: nodes_main_subgraph
       Title1: Transformed UV 2
-      ViewOffsetX0: 23
-      ViewOffsetY0: 54
   IsSubGraph0: true
   IsSubGraph1: true
   IsSubGraph2: true
@@ -3056,12 +3122,4 @@ Nodes:
   PositionY: 0
   TemplateID: nodes_main_subgraph
   Title1: ""
-  ViewOffsetX0: -2307
-  ViewOffsetX1: -2307
-  ViewOffsetX2: -2307
-  ViewOffsetX3: -2307
-  ViewOffsetY0: 70
-  ViewOffsetY1: 70
-  ViewOffsetY2: 70
-  ViewOffsetY3: 70
 SystemID: dev.snap.shaders
