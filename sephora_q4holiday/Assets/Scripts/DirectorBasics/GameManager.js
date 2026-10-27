@@ -3,7 +3,7 @@ class GameManager {
     // set le nombre de differents objet
     // crée en random les paires
 
-    this._squareNumber = 12;
+    this._squareNumber = 16;
     this._pairs = [];
 
     this.generatePair();

@@ -23,7 +23,13 @@ let flip_2_square = null;
 
 const flipAnimationDuration = 0.5;
 
+let pairFound = 0;
+
+let number_pairs = 8;
+
 //________Caller________//
+
+const onMatchCaller = script.subScene.CreateCaller("OnMatchEvent");
 //________Listener________//
 //________DelayEvent________//
 
@@ -45,6 +51,9 @@ var resetInteractionDelay = script.subScene.CreateEvent("DelayedCallbackEvent", 
 });
 
 var matchSquareDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
+  flip_2_square._anims.scale.Start(1);
+  flip_1_square._anims.scale.Start(1);
+
   flip_1_id = null;
   flip_2_id = null;
 
@@ -74,6 +83,8 @@ function Stop() {
 
   flip_1_square = null;
   flip_2_square = null;
+
+  pairFound = 0;
 }
 //___________________________Functions__________________________//
 
@@ -90,6 +101,12 @@ function onSquareTapped(squareTapped) {
     if (flip_1_id === flip_2_id) {
       print("match");
       matchSquareDelay.event.reset(flipAnimationDuration);
+      onMatchCaller.Call();
+      pairFound += 1;
+      print("pairFound" + pairFound);
+      if (pairFound === number_pairs) {
+        print("finish");
+      }
     } else {
       flipSquareDelay.event.reset(flipAnimationDuration);
     }
@@ -125,6 +142,7 @@ class Square {
     //___________________________Back__________________________//
 
     this._backObj = this.getChildByName("Back");
+    this._backObjTransform = this._backObj.getTransform();
     this._meshVisual = this._backObj.getComponent("Component.RenderMeshVisual");
     this._material = this._meshVisual.mainMaterial.clone();
     this._meshVisual.mainMaterial = this._material;
@@ -163,15 +181,21 @@ class Square {
       const rotationY = quat.angleAxis(angle, vec3.up());
       this._transform.setLocalRotation(rotationY);
     });
-
-    this._anims.scale = new Animation(script.getSceneObject(), 0.5, (ratio) => {
-      const scaleMultiplier = 1 + Math.sin(ratio * Math.PI) * 0.1;
-      const animatedScale = this._baseScale.uniformScale(scaleMultiplier);
-
-      this._transform.setLocalScale(animatedScale);
-    });
-
     this._anims.rotate.OnEnd = this.OnFlipAnimEnd.bind(this);
+
+    this._anims.scale = new Animation(
+      script.getSceneObject(),
+      0.2,
+      (ratio) => {
+        const scaleMultiplier = 1 + ratio * 0.1;
+        const animatedScale = this._baseScale.uniformScale(scaleMultiplier);
+
+        this._backObjTransform.setLocalScale(animatedScale);
+      },
+      RepeatMode.PingPong,
+    );
+
+    this._anims.scale.Easing = QuadraticInOut;
   }
 
   OnFlipAnimEnd(ratio) {
@@ -186,7 +210,6 @@ class Square {
     if (this._status === "untapped") {
       print("element tapped");
       this._anims.rotate.GoTo(1);
-      this._anims.scale.Start();
       this._status = "tapped";
       onSquareTapped(this);
     }
