@@ -28,6 +28,7 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     endTimeValue: false
+    gameCompleteDelay: false
     parent: false
     textScore: false
     textTime: false
@@ -46,6 +47,7 @@
       textScore: !<reference.Text> 00000000-0000-0000-0000-000000000000
       endTimeValue: !<float> 0.000000
       userFlow: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      gameCompleteDelay: !<float> 0.000000
   ScriptTypes:
     -
       {}

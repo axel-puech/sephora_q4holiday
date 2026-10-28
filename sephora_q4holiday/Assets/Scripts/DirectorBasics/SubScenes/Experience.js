@@ -2,7 +2,6 @@
 //@input SceneObject[] squareParent
 //@input Asset.Texture[] textures
 //@input float delayBeforeStart
-
 //@input float delayBeforeChangeScene
 
 //_________________________Director Setup_________________________//
@@ -13,181 +12,138 @@ script.subScene.OnStop = Stop;
 script.subScene.SetUpdate(Update);
 //__________________________Variables_____________________________//
 
-var squareArray = [];
-const textureList = script.textures;
+const squareArray = [];
+const flipAnimationDuration = 0.5;
 
+let gameRunning = false;
 let enableInteraction = false;
-
-let flip_1_id = null;
-let flip_2_id = null;
 
 let flip_1_square = null;
 let flip_2_square = null;
 
-const flipAnimationDuration = 0.5;
-
-let pairFound = 0;
-
-let number_pairs = 8;
-
 //________Caller________//
 
 const onMatchCaller = script.subScene.CreateCaller("OnMatchEvent");
-const toggleExperienceCaller = script.subScene.CreateCaller("OnToggleExperience", null);
+const toggleExperienceCaller = script.subScene.CreateCaller("OnToggleExperience");
 
 //________Listener________//
 
-const timerEndListener = script.subScene.CreateListener("TimerEndEvent", OnTimerEndEvent);
+const gameEndListener = script.subScene.CreateListener("GameEndEvent", OnGameEndEvent);
 
 //________DelayEvent________//
 
-var flipSquareDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
+const beforeStartDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
+  toggleExperienceCaller.Call(true);
+  gameRunning = true;
+});
+
+const flipSquareDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
   flip_1_square.resetFlip();
   flip_2_square.resetFlip();
-
-  flip_1_id = null;
-  flip_2_id = null;
-
-  flip_2_square = null;
-  flip_1_square = null;
+  ClearFlips();
 
   resetInteractionDelay.event.reset(flipAnimationDuration);
 });
 
-var resetInteractionDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
+const resetInteractionDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
   enableInteraction = true;
 });
 
-var changeSceneDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
-  script.subScene.CallEnd(null);
-});
-
-var beforeStartDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
-  toggleExperienceCaller.Call(true);
-  enableInteraction = true;
-  print("all right");
-});
-
-var matchSquareDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
-  flip_2_square._anims.scale.Start(1);
+const matchSquareDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
   flip_1_square._anims.scale.Start(1);
+  flip_2_square._anims.scale.Start(1);
+  ClearFlips();
 
-  flip_1_id = null;
-  flip_2_id = null;
-
-  flip_2_square = null;
-  flip_1_square = null;
   enableInteraction = true;
+});
+
+const changeSceneDelay = script.subScene.CreateEvent("DelayedCallbackEvent", function () {
+  script.subScene.CallEnd(null);
 });
 
 //_________________________Director_Functions_____________________//
 function Start() {
-  script.squareParent.forEach((element, id) => {
-    const pairId = global.GameManager._pairs[id];
-    const texture = textureList[pairId - 1];
-    const squareElem = new Square(element, id, pairId, texture);
-    squareArray.push(squareElem);
+  const pairs = global.GameManager.generatePair();
+
+  squareArray.forEach((square, id) => {
+    square.setPair(pairs[id], script.textures[pairs[id] - 1]);
+    square.Reset();
+    square._anims.fade.GoTo(1);
   });
+
+  ClearFlips();
+  enableInteraction = true;
 }
 function OnLateStart() {
   beforeStartDelay.event.reset(script.delayBeforeStart);
 }
 function Update() {}
 function Stop() {
-  enableInteraction = false;
-
-  flip_1_id = null;
-  flip_2_id = null;
-
-  flip_1_square = null;
-  flip_2_square = null;
-
-  pairFound = 0;
+  gameRunning = false;
 }
 //___________________________Functions__________________________//
 
-function OnTimerEndEvent() {
-  print("all right 2");
-  squareArray.forEach((element) => {
-    element._anims.fade.GoTo(0);
+function OnGameEndEvent() {
+  gameRunning = false;
+
+  squareArray.forEach((square) => {
+    square._anims.fade.GoTo(0);
   });
   changeSceneDelay.event.reset(script.delayBeforeChangeScene);
-
-  // petit timer
-  // end scene
 }
 
 function onSquareTapped(squareTapped) {
-  // si on fait le premier flip
-  if (flip_1_id === null) {
+  // premier flip
+  if (flip_1_square === null) {
     flip_1_square = squareTapped;
-    flip_1_id = squareTapped._pairId;
-  } else if (flip_2_id === null) {
-    flip_2_square = squareTapped;
-    flip_2_id = squareTapped._pairId;
-    enableInteraction = false;
-
-    if (flip_1_id === flip_2_id) {
-      print("match");
-      matchSquareDelay.event.reset(flipAnimationDuration);
-      onMatchCaller.Call();
-      pairFound += 1;
-      print("pairFound" + pairFound);
-      if (pairFound === number_pairs) {
-        print("finish");
-      }
-    } else {
-      flipSquareDelay.event.reset(flipAnimationDuration);
-    }
-
-    // petite animation de reset
+    return;
   }
+
+  // second flip
+  flip_2_square = squareTapped;
+  enableInteraction = false;
+
+  if (flip_1_square._pairId === flip_2_square._pairId) {
+    matchSquareDelay.event.reset(flipAnimationDuration);
+    onMatchCaller.Call();
+  } else {
+    flipSquareDelay.event.reset(flipAnimationDuration);
+  }
+}
+
+function ClearFlips() {
+  flip_1_square = null;
+  flip_2_square = null;
 }
 
 //___________________________Animations_________________________//
 
 class Square {
-  constructor(obj, id, pairId, texture) {
-    // interaction
-    // image
-    // id
-    // anim
+  constructor(obj) {
     this._obj = obj;
-    this._id = id;
-    this._pairId = pairId;
-    this._texture = texture;
     this._transform = this._obj.getTransform();
-    this._baseScale = this._transform.getLocalScale();
-
+    this._pairId = null;
     this._status = "untapped";
 
     //___________________________Front__________________________//
 
-    this._frontObj = this.getChildByName("Front");
-    this._interaction = this._frontObj.getComponent("Component.InteractionComponent");
+    const frontObj = this.getChildByName("Front");
 
-    this._meshVisual_front = this._frontObj.getComponent("Component.RenderMeshVisual");
-    this._material_front = this._meshVisual_front.mainMaterial.clone();
-    this._meshVisual_front.mainMaterial = this._material_front;
+    const meshVisual_front = frontObj.getComponent("Component.RenderMeshVisual");
+    this._material_front = meshVisual_front.mainMaterial.clone();
+    meshVisual_front.mainMaterial = this._material_front;
 
-    this._interaction.onTap.add(this.onTap.bind(this));
+    frontObj.getComponent("Component.InteractionComponent").onTap.add(this.onTap.bind(this));
 
     //___________________________Back__________________________//
 
-    this._backObj = this.getChildByName("Back");
-    this._backObjTransform = this._backObj.getTransform();
+    const backObj = this.getChildByName("Back");
+    this._backObjTransform = backObj.getTransform();
+    this._baseScale = this._backObjTransform.getLocalScale();
 
-    this._meshVisual = this._backObj.getComponent("Component.RenderMeshVisual");
-    this._material = this._meshVisual.mainMaterial.clone();
-
-    this._meshVisual.mainMaterial = this._material;
-    this.setTexture(this._texture);
-
-    this._anims = {
-      fade: null,
-      rotate: null,
-      scale: null,
-    };
+    const meshVisual = backObj.getComponent("Component.RenderMeshVisual");
+    this._material = meshVisual.mainMaterial.clone();
+    meshVisual.mainMaterial = this._material;
 
     this.initAnimations();
     this.Reset();
@@ -207,44 +163,41 @@ class Square {
   }
 
   initAnimations() {
-    this._anims.fade = new Animation(script.getSceneObject(), 0.5, (ratio) => {
-      this._material_front.mainPass.alphaRatio = ratio;
-      this._material.mainPass.alphaRatio = ratio;
-    });
+    this._anims = {
+      fade: new Animation(script.getSceneObject(), 0.5, (ratio) => {
+        this._material_front.mainPass.alphaRatio = ratio;
+        this._material.mainPass.alphaRatio = ratio;
+      }),
 
-    this._anims.rotate = new Animation(script.getSceneObject(), flipAnimationDuration, (ratio) => {
-      const angle = Math.PI * ratio;
-      const rotationY = quat.angleAxis(angle, vec3.up());
-      this._transform.setLocalRotation(rotationY);
-    });
+      rotate: new Animation(script.getSceneObject(), flipAnimationDuration, (ratio) => {
+        const angle = Math.PI * ratio;
+        this._transform.setLocalRotation(quat.angleAxis(angle, vec3.up()));
+      }),
+
+      scale: new Animation(
+        script.getSceneObject(),
+        0.2,
+        (ratio) => {
+          const scaleMultiplier = 1 + ratio * 0.05;
+          this._backObjTransform.setLocalScale(this._baseScale.uniformScale(scaleMultiplier));
+        },
+        RepeatMode.PingPong,
+      ),
+    };
+
     this._anims.rotate.OnEnd = this.OnFlipAnimEnd.bind(this);
-
-    this._anims.scale = new Animation(
-      script.getSceneObject(),
-      0.2,
-      (ratio) => {
-        const scaleMultiplier = 1 + ratio * 0.05;
-        const animatedScale = this._baseScale.uniformScale(scaleMultiplier);
-
-        this._backObjTransform.setLocalScale(animatedScale);
-      },
-      RepeatMode.PingPong,
-    );
-
     this._anims.scale.Easing = QuadraticInOut;
   }
 
   OnFlipAnimEnd(ratio) {
     if (ratio === 0) {
-      print("end flip anim");
       this._status = "untapped";
     }
   }
 
   onTap() {
-    if (!enableInteraction) return;
+    if (!gameRunning || !enableInteraction) return;
     if (this._status === "untapped") {
-      print("element tapped");
       this._anims.rotate.GoTo(1);
       this._status = "tapped";
       onSquareTapped(this);
@@ -255,15 +208,20 @@ class Square {
     this._anims.rotate.GoTo(0);
   }
 
-  setTexture(tex) {
-    this._material.mainPass.baseTex = tex;
+  setPair(pairId, texture) {
+    this._pairId = pairId;
+    this._material.mainPass.baseTex = texture;
   }
 
   Reset() {
+    this._status = "untapped";
     this._anims.fade.Reset();
-    this._anims.fade.JumpTo(1);
-
     this._anims.rotate.Reset();
     this._anims.scale.Reset();
   }
 }
+
+// les carrés sont créés une seule fois, Start ne fait que les remélanger
+script.squareParent.forEach((element) => {
+  squareArray.push(new Square(element));
+});

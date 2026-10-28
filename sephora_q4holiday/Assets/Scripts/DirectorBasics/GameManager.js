@@ -1,43 +1,36 @@
 class GameManager {
   constructor() {
-    // set le nombre de differents objet
-    // crée en random les paires
-
     this._squareNumber = 16;
+    this._shuffle = true;
     this._pairs = [];
 
-    this.generatePair();
-    print("pairs :" + this._pairs);
+    this._remainingTime = 0;
+    this._score = 0;
+  }
 
-    this._status = "no"; // flip_1, flip_2
-
-    this._flip_1 = null;
-    this._flip_2 = null;
+  getPairNumber() {
+    return this._squareNumber / 2;
   }
 
   generatePair() {
     this._pairs = [];
 
-    const pairNumber = this._squareNumber / 2;
-
-    for (let pairId = 1; pairId <= pairNumber; pairId++) {
+    for (let pairId = 1; pairId <= this.getPairNumber(); pairId++) {
       this._pairs.push(pairId, pairId);
     }
 
     // Mélange de Fisher-Yates
-    for (let i = this._pairs.length - 1; i > 0; i--) {
-      const randomIndex = Math.floor(Math.random() * (i + 1));
-      const currentPair = this._pairs[i];
+    if (this._shuffle) {
+      for (let i = this._pairs.length - 1; i > 0; i--) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+        const currentPair = this._pairs[i];
 
-      this._pairs[i] = this._pairs[randomIndex];
-      this._pairs[randomIndex] = currentPair;
+        this._pairs[i] = this._pairs[randomIndex];
+        this._pairs[randomIndex] = currentPair;
+      }
     }
 
     return this._pairs;
-  }
-
-  Reset() {
-    this._anims.fade.Reset();
   }
 }
 

@@ -28,7 +28,11 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     background: false
+    outroScore: false
+    outroTime: false
     parent: false
+    playAgain: false
+    share: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -40,6 +44,10 @@
   DefaultScriptInputs:
     - parent: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       background: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      outroTime: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      outroScore: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      playAgain: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      share: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
